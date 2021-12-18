@@ -47,7 +47,7 @@ export default {
     onLoad(){
       console.log(this.chatId);
         const WS = require('@master.technology/websockets');
-        this.socket = new WS(`wss://swapchad-br-main.herokuapp.com/api/chat/${this.chatId}`,
+        this.socket = new WS(`wss://swapchad-br-mvp.herokuapp.com/api/chat/${this.chatId}`,
             { timeout: 6000, allowCellular: true});
         const token = localStorage.getItem("jwt-token");
         console.log(token);
