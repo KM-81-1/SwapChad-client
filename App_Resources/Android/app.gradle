@@ -1,9 +1,10 @@
 // Add your native dependencies here:
 
 // Uncomment to add recyclerview-v7 dependency
-//dependencies {
-//	implementation 'com.android.support:recyclerview-v7:+'
-//}
+// dependencies {
+// 	implementation 'com.android.support:recyclerview-v7:+'
+// compile 'org.slf4j:slf4j-nop:1.7.25'
+// }
 
 // If you want to add something to be applied before applying plugins' include.gradle files
 // e.g. project.ext.googlePlayServicesVersion = "15.0.1"
@@ -16,5 +17,6 @@ android {
   }
   aaptOptions {
     additionalParameters "--no-version-vectors"
+
   }
 }

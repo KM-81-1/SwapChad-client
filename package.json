@@ -4,12 +4,22 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@master.technology/websockets": "^2.0.3",
     "@nativescript/core": "~8.1.1",
+    "@nativescript/secure-storage": "^3.0.0",
     "@nativescript/theme": "~3.0.1",
-    "nativescript-vue": "~2.9.0"
+    "axios": "^0.24.0",
+    "https": "^1.0.0",
+    "nativescript-localstorage": "^2.0.2",
+    "nativescript-secure-storage": "^2.6.2",
+    "nativescript-vue": "~2.9.0",
+    "nativescript-websockets": "^2.0.0"
   },
   "devDependencies": {
-    "@nativescript/webpack": "~5.0.0",
-    "nativescript-vue-template-compiler": "~2.9.0"
+    "@nativescript/android": "8.1.1",
+    "@nativescript/webpack": "~5.0.2",
+    "nativescript-vue-template-compiler": "~2.9.0",
+    "socket.io": "^4.4.0",
+    "socket.io-client": "^4.4.0"
   }
 }
