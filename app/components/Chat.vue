@@ -28,6 +28,7 @@ import Message from "~/components/Message";
 // import Main from "~/components/Main";
 import getToken from "~/utils/token";
 import getHostName from "~/utils/hostName";
+import { Application, AndroidApplication, isAndroid } from "@nativescript/core";
 export default {
   components: {
     Message,
@@ -43,7 +44,12 @@ export default {
   },
   methods: {
     onLoad(){
-      console.log(this.chatId);
+        console.log(this.chatId);
+        if (isAndroid) {
+          Application.android.on(AndroidApplication.activityBackPressedEvent, function (args) {
+            args.cancel = true;
+          });
+        }
         const WS = require('@master.technology/websockets');
         this.socket = new WS(`wss://swapchad-br-mvp.herokuapp.com/api/chat/${this.chatId}`,
             { timeout: 6000, allowCellular: true});
