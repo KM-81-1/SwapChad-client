@@ -11,15 +11,13 @@
                   row="0" col="1" />
         </GridLayout>
       </FlexboxLayout>
-<!--      <ScrollView orientation="vertical" dock="top" id="scrollView">-->
-        <ListView dock="top" ref="list" v-for="mes in messages">
-          <v-template>
-            <Message
-                     :text="mes.text"
-                     :side="mes.author ? 'left' : 'right'" />
-          </v-template>
-        </ListView>
-<!--      </ScrollView>-->
+      <ListView dock="top" ref="list" for="mes in messages">
+        <v-template>
+          <Message
+                   :text="mes.text"
+                   :side="mes.author ? 'left' : 'right'" />
+        </v-template>
+      </ListView>
     </DockLayout>
   </Page>
 </template>
@@ -71,6 +69,9 @@ export default {
         author: 1,
         text: message
       });
+      this.$nextTick().then(() => {
+        this.$refs.list.nativeView.scrollToIndexAnimated(this.messages.length);
+      });
     },
 
     sendMessage() {
@@ -83,7 +84,9 @@ export default {
         this.newMessage = "";
         const list = this.$refs.list.nativeView;
         console.log(this.messages.length);
-        list.scrollToIndexAnimated(this.messages.length);
+        this.$nextTick().then(() => {
+          this.$refs.list.nativeView.scrollToIndexAnimated(this.messages.length);
+        });
       }
     },
 
