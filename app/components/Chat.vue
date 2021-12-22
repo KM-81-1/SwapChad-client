@@ -4,10 +4,10 @@
     <DockLayout stretchLastChild="true">
       <FlexboxLayout class="enter-block" flexDirection="row"
                      dock="bottom">
-        <GridLayout columns="*2, *" rows="50%">
-          <TextField class="input" v-model="newMessage"
+        <GridLayout columns="*2, *" rows="auto, auto">
+          <TextView class="input" v-model="newMessage" maxLines="5" minHeight="10%"
                      hint="Enter text..." />
-          <Button class="send-btn" @tap="sendMessage" text="Send"
+          <Button class="send-btn" @tap="sendMessage" text="Send" verticalAlignment="top"
                   row="0" col="1" />
         </GridLayout>
       </FlexboxLayout>
