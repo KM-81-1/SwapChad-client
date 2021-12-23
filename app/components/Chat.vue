@@ -1,6 +1,7 @@
 <template>
   <Page @loaded="onLoad">
-    <ActionBarLocal text="Chat" :back="true" @backTapped="onBack"/>
+    <ActionBarLocal :text="chatTitle" ref="chatTitle" :back="true" :display-profile-icon="true" 
+       :display-save-button="true" @backTapped="onBack" @profileTapped="saveChat"/>
     <DockLayout stretchLastChild="true">
       <FlexboxLayout class="enter-block" flexDirection="row"
                      dock="bottom">
@@ -28,13 +29,18 @@ import Message from "~/components/Message";
 // import Main from "~/components/Main";
 import getToken from "~/utils/token";
 import getHostName from "~/utils/hostName";
+import axios from 'axios/dist/axios';
 import { Application, AndroidApplication, isAndroid } from "@nativescript/core";
 export default {
   components: {
     Message,
     ActionBarLocal
   },
-  props: ["chatId"],
+  props: [
+    "chatId",
+    "saved",
+    "chatTitle"
+  ],
   data() {
     return {
       newMessage: "",
@@ -51,12 +57,13 @@ export default {
           });
         }
         const WS = require('@master.technology/websockets');
-        this.socket = new WS(`wss://swapchad-br-mvp.herokuapp.com/api/chat/${this.chatId}`,
+        const host = getHostName();
+        this.socket = new WS(`${host.replace("http", "ws")}/api/chat/${this.chatId}`,
             { timeout: 6000, allowCellular: true});
         const token = localStorage.getItem("jwt-token");
         console.log(token);
         this.socket.on('open', () => { console.log("Hey I'm open") });
-        this.socket.on('message', this.receiveMessage);
+        this.socket.on('message', this.receiveOldMessages);
         this.socket.on('close', (socket, code, reason) => {
           console.log("Socket was closed because: ",
                     reason, " code: ", code);
@@ -66,6 +73,22 @@ export default {
         this.socket.open();
         this.socket.send(token);
         console.log("setted up");
+    },
+
+    receiveOldMessages(socket, messages) {
+      JSON.parse(messages).forEach((message) => {
+        this.messages.push({
+          author: message["from"] === "ANON",
+          text: message["text"]
+        });
+      });
+      
+      socket.off('message', this.receiveOldMessages);
+      socket.on('message', this.receiveMessage);
+      
+      this.$nextTick().then(() => {
+        this.$refs.list.nativeView.scrollToIndexAnimated(this.messages.length);
+      });
     },
 
     receiveMessage(socket, message){
@@ -96,8 +119,43 @@ export default {
       }
     },
 
+    saveChat() {
+      const host = getHostName();
+      const token = getToken();
+      console.log(token);
+      prompt({
+        title: "Save chat",
+        message: "Enter title:",
+        okButtonText: "Save",
+        cancelButtonText: "Cancel"
+      }).then(result => {
+        if (result.result) {
+          axios.post(`${host}/api/chat/${this.chatId}/save`,
+          { "title": result.text },
+          { headers: token})
+          .then(res => {
+            if (res.status === 200){
+              if (!this.saved) {
+                alert({
+                  title: "Save chat",
+                  message: "Chat was saved!"
+                });
+              }
+              this.saved = true;
+              this.chatTitle = result.text;
+            }
+          })
+          .catch(err => console.log(err));
+        }
+        console.log("Dialog result: " + result.result + ", text: " + result.text);
+      });
+    },
+
     onBack(){
-      console.log("suka");
+      if (this.saved) {
+        this.socket.close();
+        return;
+      }
       confirm({
         title: "End chat",
         message: "Are you sure?",

@@ -19,6 +19,14 @@
                 @tap="stopSearching"/>
         <Label :text="chatId" v-if="chatId" fontSize="24"/>
         <ActivityIndicator :busy="searching" class="activity-indicator" verticalAlignment="center"/>
+        <Label text="Saved chats" v-if="savedChats.length" fontSize="24" horizontalAlignment="center"/>
+        <ListView for="chat in savedChats" v-if="savedChats.length" height="60%">
+          <v-template>
+            <Button :text="chat.title" margin=1
+              class="btn_start"
+              @tap="openSavedChat(chat.chatId, chat.title)"/>
+          </v-template>
+        </ListView>
       </StackLayout>
     </FlexboxLayout>
   </Page>
@@ -40,6 +48,7 @@ export default {
       loading: true,
       displayedName: null,
       chatId: null,
+      savedChats: [],
       socket: null
     }
   },
@@ -52,7 +61,24 @@ export default {
       this.$navigateTo(Profile);
     },
 
+    openSavedChat(chatId, title) {
+      console.log(chatId);
+      this.savedChats = [];
+      this.searching = true;
+      this.$nextTick().then(() => {
+        this.$navigateTo(Chat, {
+          props: {
+            chatId: chatId,
+            saved: true,
+            chatTitle: title
+          }
+        });
+      });
+    },
+
     startChat() {
+      const chatsBackup = this.savedChats;
+      this.savedChats = [];
       this.searching = true;
       let token = getToken();
       const host = getHostName();
@@ -63,12 +89,20 @@ export default {
       .then((data) => {
         const chatId = data.chat_id;
         if (chatId) {
-          this.$navigateTo(Chat, {
-            props: {
-              chatId: chatId
-            }
+          this.$nextTick().then(() => {
+            this.$navigateTo(Chat, {
+              props: {
+                chatId: chatId,
+                saved: false,
+                chatTitle: "Anonymous"
+              }
+            });
           });
         }
+      })
+      .catch(err => {
+        console.log(err);
+        this.savedChats = chatsBackup;
       });
     },
 
@@ -83,6 +117,30 @@ export default {
         }
       })
       .catch(err => console.log(err));
+    },
+
+    loadSavedChats() {
+      const host = getHostName();
+      const token = getToken();
+      this.savedChats = [];
+      axios.get(`${host}/api/chats/get-saved`, {headers: token})
+      .then(res => {
+        if (res.status === 403){
+          this.$navigateTo(Authentication);
+        }
+        else if (res.status === 200) {
+          for (const [chat_id, chat_info] of Object.entries(res.data)) {
+            this.savedChats.push({
+              chatId: chat_id,
+              title: chat_info.title
+            });
+          }
+          console.log("recv saved chats:", this.savedChats);
+          this.loading = false;
+          this.searching = false;
+        }
+      })
+      .catch(() => this.$navigateTo(Authentication));
     },
 
     onLoad() {
@@ -101,9 +159,8 @@ export default {
             }
             else if (res.status === 200) {
               this.displayedName = res.data.public.displayed_name;
-              this.loading = false;
-              this.searching = false;
               console.log(this.displayedName);
+              this.loadSavedChats();
             }
           })
           .catch(() => this.$navigateTo(Authentication));
